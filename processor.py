@@ -60,11 +60,11 @@ def clean(line):
     return result
 
 
-def clean_comment(text):
+def clean_review(text):
     """
     对原始评论进行清理，删去非法字符，统一标点，删去无用评论
     """
-    comment_set = []
+    review_set = []
     for line in text:
         line = line.lstrip()
         line = line.rstrip()
@@ -72,9 +72,9 @@ def clean_comment(text):
         if len(line) < 7:  # 过于短的评论需要删除
             continue
         if line and line not in ['该用户没有填写评论。', '用户晒单。']:
-            comment_set.append(line)
+            review_set.append(line)
 
-    return comment_set
+    return review_set
 
 
 def get_seg_pos(text, type='word'):
@@ -162,10 +162,10 @@ if __name__ == "__main__":
             doc_path = os.path.join(config.RAW_DATA_FOLD, file)
             with open(doc_path, 'r') as f_r:
                 text = f_r.readlines()
-            comment_set = clean_comment(text)
+            review_set = clean_review(text)
             print('---process %s ---' % doc_path)
             with open(os.path.join(config.CLEAN_DATA_FOLD, file), 'w') as f_w:
-                for i in comment_set:
+                for i in review_set:
                     f_w.write(i+'\n')
     print('\tDone')
 

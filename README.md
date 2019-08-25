@@ -11,18 +11,18 @@ jieba分词的效果还不足以支持电商评论，例如"痘痘肌"、"炒鸡
 我使用了(PMI+左右熵)的方法来找出新词，参考：https://www.matrix67.com/blog/archives/5044
 3. config.py\
 一些文件路径配置
-4. comment_generate_utils.py\
+4. review_generate_utils.py\
 用于无监督抽取用户观点表达的函数。
 参考: https://github.com/rainarch/SentiBridge
-5. generate_fake_comment.py\
+5. generate_fake_review.py\
 生成仿真评论
 
 
 ### 运行方式
-1. 将原始评论放到raw_comment目录下
+1. 将原始评论放到raw_review目录下
 2. ```python processor.py``` 进行预处理
 3. ```python find_phrase.py``` 找出jieba无法处理的词，然后手动添加到'resources/user_dict.txt'中
-4. ```generate_fake_comment.py``` 生成仿真评论
+4. ```generate_fake_review.py``` 生成仿真评论
 
 ### 效果
 [美迪惠尔 N.M.F针剂水库保湿面膜](https://goods.kaola.com/product/2227311.html)有如下的20句评论，其中有10句是真实用户评论，10句是生成的评论，能看出来么?😂

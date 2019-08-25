@@ -12,24 +12,24 @@ ENG_MARK = ['eng']
 RESERVED_MARK = NOUN_MARK + VERB_MARK + ADJECTIVE_MARK + ADVERB_MARK + ENG_MARK # 用于发现新词
 
 
-def text2comment(seg_pos_text):
+def text2review(seg_pos_text):
     """
     经过分词的文档，得到原始用户的每条评论
     """
-    comment_list = []  # 保存全部的按照指定标点切分的句子
+    review_list = []  # 保存全部的按照指定标点切分的句子
     all_word = set()  # 全部单词
     for line in seg_pos_text:
         line = line.strip()
         line = line.split(' ')
-        cur_comment = []
+        cur_review = []
         for term in line:
             word, flag = term.split('/')
-            cur_comment.append(word)
+            cur_review.append(word)
             if flag in RESERVED_MARK:
                 all_word.add(word)
-        comment_list.append(cur_comment)
+        review_list.append(cur_review)
 
-    return comment_list, all_word
+    return review_list, all_word
 
 
 def find_word_phrase(all_word, seg_list):
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         line = line.split(' ')
         word_idf[line[0]] = float(line[1])
 
-    comment_list, all_word = text2comment(seg_pos_text)
+    review_list, all_word = text2review(seg_pos_text)
 
-    find_word_phrase(all_word, comment_list)
+    find_word_phrase(all_word, review_list)
 

@@ -1,4 +1,4 @@
-from comment_generate_utils import *
+from review_generate_utils import *
 import config
 
 # 利用抽取的方法从原始评论中抽取含有观点表达的短句，并随机组合一些含有观点表达的短句组成一句仿真评论。
@@ -30,7 +30,7 @@ with open(config.POS_ADJ_WORD_FILE, 'r') as f:
     for line in f.readlines():
         pos_adj_word.append(line.strip())
 
-seg_list, pos_list, seg_comment_list = text2seg_pos(seg_pos_text, pattern='[。！？，～]')
+seg_list, pos_list, seg_review_list = text2seg_pos(seg_pos_text, pattern='[。！？，～]')
 raw_aspect_list = get_candidate_aspect(seg_list, pos_list, pos_adj_word, stop_word, word_idf)
 
 # 构建候选集合
@@ -52,16 +52,16 @@ for i, item in enumerate(pair_score):
             pair_useful[aspect] = [opinion]
 
 # 从原始评论中抽取观点表达
-aspect_express = get_aspect_express(seg_comment_list, pair_useful)
+aspect_express = get_aspect_express(seg_review_list, pair_useful)
 
 # 字符匹配合并aspect
 merged_aspect_express, opinion_set = merge_aspect_express(aspect_express, pair_useful)
 
 # 生成假评论
-generated_raw_comments = generate_comments(merged_aspect_express)
+generated_raw_reviews = generate_reviews(merged_aspect_express)
 
-results = fake_comment_filter(generated_raw_comments, opinion_set)
+results = fake_review_filter(generated_raw_reviews, opinion_set)
 
-with open('%s/%s_generated_comments.txt' % (config.RESULTS_DATASET_FOLD, PRODUCTID), 'w') as f:
+with open('%s/%s_generated_reviews.txt' % (config.RESULTS_DATASET_FOLD, PRODUCTID), 'w') as f:
     for c in results:
         f.write(c + '\n')

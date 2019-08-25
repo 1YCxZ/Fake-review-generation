@@ -29,16 +29,16 @@ def text2seg_pos(seg_pos_text, pattern='[。！？]'):
     """
     seg_list = []  # 保存全部按标点切分的seg
     pos_list = []  # 保存全部按标点切分的pos
-    seg_comment_list = []  # 用户完整的一条评论
+    seg_review_list = []  # 用户完整的一条评论
     for line in seg_pos_text:
         line = line.strip()
         line = line.split(' ')
         seg_sub_list = []
         pos_sub_list = []
-        cur_comment = []
+        cur_review = []
         for term in line:
             word, flag = term.split('/')
-            cur_comment.append(word)
+            cur_review.append(word)
             if word in pattern:
                 seg_sub_list.append(word)
                 pos_sub_list.append(flag)
@@ -49,7 +49,7 @@ def text2seg_pos(seg_pos_text, pattern='[。！？]'):
             else:
                 seg_sub_list.append(word)
                 pos_sub_list.append(flag)
-        seg_comment_list.append(list(cur_comment))
+        seg_review_list.append(list(cur_review))
 
     # temp_dict = {}
     # seg_unique_list = []
@@ -62,7 +62,7 @@ def text2seg_pos(seg_pos_text, pattern='[。！？]'):
     #         temp_dict[_s] = 0
     #         seg_unique_list.append(i)
 
-    return seg_list, pos_list, seg_comment_list
+    return seg_list, pos_list, seg_review_list
 
 
 def get_candidate_aspect(seg_list, pos_list, adj_word, stop_word, word_idf):
@@ -247,7 +247,7 @@ class PairPattSort:
         return pair_score
 
 
-def get_aspect_express(seg_comment_list, pair_useful):
+def get_aspect_express(seg_review_list, pair_useful):
     """
     抽取原始评论中的aspect作为输入，完整的评论作为输出
     """
@@ -264,24 +264,24 @@ def get_aspect_express(seg_comment_list, pair_useful):
 
     raw_aspect_express = {k: [] for k in pair_useful}  # 用户关于某个观点的一段原始表达
     raw_aspect_express_count = {k: 0 for k in pair_useful}  # 记录某个观点表达出现的次数
-    for comment in seg_comment_list:  # 每个sentence就是一句完整的comment
+    for review in seg_review_list:  # 每个sentence就是一句完整的review
 
         source = []  # 训练的src
-        if comment[-1] not in PUNCTUATION:
-            comment.append('。')
-        target = comment  # 训练的tgt
+        if review[-1] not in PUNCTUATION:
+            review.append('。')
+        target = review  # 训练的tgt
 
-        # 对于单个comment进行切分
-        cur_comment = []
+        # 对于单个review进行切分
+        cur_review = []
         pre_end = 0
-        for i, _ in enumerate(comment):
-            if comment[i] in ['。', '！', '？', '，', '～']:
-                cur_comment.append(comment[pre_end:i + 1])
+        for i, _ in enumerate(review):
+            if review[i] in ['。', '！', '？', '，', '～']:
+                cur_review.append(review[pre_end:i + 1])
                 pre_end = i + 1
-            elif i == len(comment) - 1:
-                cur_comment.append(comment[pre_end:])
+            elif i == len(review) - 1:
+                cur_review.append(review[pre_end:])
 
-        for sentence in cur_comment:  # sentence 是两个标点之间的短句
+        for sentence in cur_review:  # sentence 是两个标点之间的短句
             if sentence[-1] not in PUNCTUATION:
                 sentence.append('。')
             find_opinion_flag = False
@@ -361,29 +361,29 @@ def merge_aspect_express(aspect_express, pair_useful):
     return merged_express, opinion_set
 
 
-def build_dataset_express(seg_comment_list, pair_useful):
+def build_dataset_express(seg_review_list, pair_useful):
     """
     抽取原始评论中的aspect作为输入，完整的评论作为输出
     """
     train_data = []  # 记录训练数据
-    for comment in seg_comment_list:  # 每个sentence就是一句完整的comment
+    for review in seg_review_list:  # 每个sentence就是一句完整的review
 
         source = []  # 训练的src
-        if comment[-1] not in PUNCTUATION:
-            comment.append('。')
-        target = comment  # 训练的tgt
+        if review[-1] not in PUNCTUATION:
+            review.append('。')
+        target = review  # 训练的tgt
 
-        # 对于单个comment进行切分
-        cur_comment = []
+        # 对于单个review进行切分
+        cur_review = []
         pre_end = 0
-        for i, _ in enumerate(comment):
-            if comment[i] in ['。', '！', '？', '，', '～']:
-                cur_comment.append(comment[pre_end:i + 1])
+        for i, _ in enumerate(review):
+            if review[i] in ['。', '！', '？', '，', '～']:
+                cur_review.append(review[pre_end:i + 1])
                 pre_end = i + 1
-            elif i == len(comment) - 1:
-                cur_comment.append(comment[pre_end:])
+            elif i == len(review) - 1:
+                cur_review.append(review[pre_end:])
 
-        for sentence in cur_comment:  # sentence 是两个标点之间的短
+        for sentence in cur_review:  # sentence 是两个标点之间的短
             if sentence[-1] not in PUNCTUATION:
                 sentence.append('。')
             find_opinion_flag = False
@@ -398,9 +398,9 @@ def build_dataset_express(seg_comment_list, pair_useful):
 
     max_source_length = 0
     # 筛选训练数据
-    def check_comment(item):
+    def check_review(item):
         """
-        判断当前comment是否合法
+        判断当前review是否合法
         """
         source = item[0]
         tgt = item[1]
@@ -417,7 +417,7 @@ def build_dataset_express(seg_comment_list, pair_useful):
 
     legal_train_data= []
     for item in train_data:
-        if check_comment(item):
+        if check_review(item):
             max_source_length = max(max_source_length, len(item[0]))
             legal_train_data.append(item)
 
@@ -425,7 +425,7 @@ def build_dataset_express(seg_comment_list, pair_useful):
     return legal_train_data
 
 
-def generate_comments(aspect_express, num=1000):
+def generate_reviews(aspect_express, num=1000):
     """
     根据候选集合生成假评论
     """
@@ -459,25 +459,25 @@ def generate_comments(aspect_express, num=1000):
     return res
 
 
-def fake_comment_filter(comments, opinion_set):
+def fake_review_filter(reviews, opinion_set):
     """
     筛去评论中不像人写的句子：如果同一个形容词重复出现两次就判定为假评论，同时筛去长度超过60的评论
     """
     results = []
-    for comment in comments:
+    for review in reviews:
         opinion_used = {k: 0 for k in opinion_set}
         flag = True
-        for word in comment:
+        for word in review:
             if word in ILLEGAL_WORD:
                 flag = False
             if word in opinion_used:
                 opinion_used[word] += 1
                 if opinion_used[word] >= 2:
                     flag = False
-                    # print('Fake:{}'.format(''.join(comment)))
+                    # print('Fake:{}'.format(''.join(review)))
                     break
         if flag:
-            _s = ''.join(comment)
+            _s = ''.join(review)
             _s = _s.split('#')  # 最后一个是空字符
             review = ''
             pu = ['，'] * 100 + ['～'] * 20 + ['！'] * 20 + EMOJI + YANWENZI
@@ -487,7 +487,7 @@ def fake_comment_filter(comments, opinion_set):
                     review += a_s + random.choice(pu)
             if not review:
                 print('error:')
-                print(comment)
+                print(review)
             review = review[:-1] + '。'
             results.append(review)
             print('\t' + review)
